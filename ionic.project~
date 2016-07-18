@@ -1,0 +1,11 @@
+{
+  "name": "InventoryControl",
+  "app_id": "dcbfeeaf",
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://cors.api.com/api"
+    }
+  ]
+
+}

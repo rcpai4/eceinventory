@@ -1,0 +1,26 @@
+<ion-view view-title="Login" ng-app="app" align-title="center">
+    <ion-content overflow-scroll="true" padding="true" class="has-header"
+    ng-controller="loginCtrl">
+        <form class="list">
+            <ion-list>
+                <label class="item item-input">
+                    <span class="input-label">Username </span>
+                    <input type="text" placeholder="" ng-model="userInfo.name">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Password</span>
+                    <input type="password" placeholder="">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">E-MAIL</span>
+                    <input type="text" placeholder="" ng-model="userInfo.email">
+                </label>                
+            </ion-list>
+            <div class="spacer" style="height: 40px;"></div>
+            <a id="login-button2" class="button
+                button-stable button-block" ng-click="setUserInfo()">Log in
+                using vt email</a>
+            
+        </form>
+    </ion-content>
+</ion-view>

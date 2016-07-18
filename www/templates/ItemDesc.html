@@ -1,0 +1,10 @@
+<ion-view title=" Item Description" ng-app="app">
+    <ion-content overflow-scroll="true" padding="true" class="has-header"
+    ng-controller="ItemDescCtrl">
+        <form class="list">
+            <ion-list ng-repeat="member in item">
+            <ion-item> <b>{{itemValues[$index]}}:</b>  {{member}}</ion-item>
+            </ion-list> 
+        </form>
+    </ion-content>
+</ion-view>

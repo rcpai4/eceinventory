@@ -1,0 +1,20 @@
+<ion-view title="Home Page" ng-app="app">
+    <ion-content overflow-scroll="true" padding="true" class="has-header" ng-controller="homePageCtrl">
+        <form class="list"></form>
+        <ion-list>
+            <label class="item item-input">
+                <span class="input-label">NAME</span><p
+                    placeholder=userInfo.name></p>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">E-MAIL</span><textarea
+                    placeholder="">{{userInfo.email}}</textarea>
+            </label>
+        </ion-list>
+        <div class="spacer" style="width: 285px; height: 50px;"></div>
+        <a ui-sref="inventory" id="homePage-button14" class="button
+            button-stable  button-block">My Inventory</a>
+        <a id="homePage-button12" class="button button-stable
+            button-block" ng-click="scanBarcode()">SCAN</a>
+    </ion-content>
+</ion-view>

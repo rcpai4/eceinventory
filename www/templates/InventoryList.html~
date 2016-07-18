@@ -1,0 +1,10 @@
+<ion-view title="InventoryList" ng-app="app">
+    <ion-content overflow-scroll="true" padding="true" class="has-header"
+    ng-controller="InventoryListCtrl">
+        <form class="list">
+            <ion-list ng-repeat="item in inventoryList">
+            <ion-item ng-click="setItemtoDisplay($index)"> {{$index +1}}. {{item.Description}}</ion-item>
+            </ion-list> 
+        </form>
+    </ion-content>
+</ion-view>
