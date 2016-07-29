@@ -1,0 +1,16 @@
+<ion-view title=" Item images" ng-app="app">
+    <ion-content overflow-scroll="true" padding="true" class="has-header"
+    ng-controller="itemPictures">
+       <div class="item item-divider">
+            <i class="ion-images"></i>
+            My Images
+        </div>
+
+        <a class="item item-list-detail">
+            <ion-scroll direction="x">
+                <img ng-repeat="image in allImages"
+                data-ng-src="data:image/jpeg;base64,{{image.src}}" ng-click="showImages($index)" class="image-list-thumb"/>
+            </ion-scroll>
+        </a>
+    </ion-content>
+</ion-view>

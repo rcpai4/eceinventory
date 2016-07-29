@@ -120,7 +120,100 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('ItemDescCtrl', function($scope,MainService) {
+.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera) {
     $scope.itemValues = MainService.itemValues;
     $scope.item = MainService.itemToDisplay;
+
+    /* Uploading a Picture to the server */
+    $scope.takePicture = function() {
+        var options = { 
+            quality : 75, 
+            destinationType : Camera.DestinationType.DATA_URL, 
+            sourceType : Camera.PictureSourceType.CAMERA, 
+            allowEdit : false,
+            encodingType: Camera.EncodingType.JPEG,
+            targetWidth: 300,
+            targetHeight: 300,
+            popoverOptions: CameraPopoverOptions,
+            saveToPhotoAlbum: false
+        };
+ 
+        $cordovaCamera.getPicture(options).then(function(imageData) {
+            var item = {
+                text          :  $scope.item.Ptag,
+                complete      : false,
+                containerName : "todoitemimages",
+                imageData     : imageData
+            };
+
+        Azureservice.insert('Todo',
+            item)
+        .then(function() {
+            console.log('Insert successful');
+        }, function(err) {
+            console.error('Azure Error: ' + err);
+        });
+        
+        }, function(err) {
+            alert('Could not take a Picture err: ' + err);
+        });
+    }
+    
+    $scope.seePictures = function(){
+        $state.go('itemPictures');
+    }
 })
+
+.controller('itemPictures', function($scope,$ionicModal,$http,Azureservice,MainService) {
+
+   $scope.item = MainService.itemToDisplay;
+   
+   $scope.allImages = [];
+
+    $scope.refreshImages = function(){
+       Azureservice.query('Todo', {
+            criteria: {
+                text: $scope.item.Ptag
+            }
+        })
+        .then(function(items) {
+            // Assigin the results to a $scope variable
+            $scope.allImages = [];
+
+            items.forEach(function(item){
+                $http.get(item.imageUri).then(function(response) {
+                    $scope.allImages.push({src: response.data});
+                });
+            });
+            //$scope.allImages = allImages;
+            
+        }, function(err) {
+            console.error('There was an error quering Azure ' + err);
+        });
+    };
+    
+    $scope.showImages = function(index) {
+        $scope.activeSlide = index;
+        $scope.showModal('templates/image-popover.html');
+    }
+
+     $scope.showModal = function(templateUrl) {
+        $ionicModal.fromTemplateUrl(templateUrl, {
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function(modal) {
+            $scope.modal = modal;
+            $scope.modal.show();
+        });
+    }
+
+    // Close the modal
+    $scope.closeModal = function() {
+        $scope.modal.hide();
+        $scope.modal.remove()
+    };
+
+    $scope.refreshImages();
+
+})
+

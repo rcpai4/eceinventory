@@ -84,6 +84,11 @@ angular.module('app.routes', [])
       url: '/ItemDesc',
       templateUrl: 'templates/ItemDesc.html'
     })
+
+    .state('itemPictures', {
+       url: '/itemPictures',
+       templateUrl: 'templates/itemPictures.html'
+    })
     
     ;
 
