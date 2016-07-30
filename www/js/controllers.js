@@ -120,31 +120,100 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera) {
+.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera,$ionicPopup,$cordovaImagePicker) {
     $scope.itemValues = MainService.itemValues;
     $scope.item = MainService.itemToDisplay;
 
     /* Uploading a Picture to the server */
-    $scope.takePicture = function() {
+    $scope.takePicture = function() {   
+        /*Set Picture options: Right now the resolution is hardcoded*/
         var options = { 
             quality : 75, 
             destinationType : Camera.DestinationType.DATA_URL, 
             sourceType : Camera.PictureSourceType.CAMERA, 
             allowEdit : false,
             encodingType: Camera.EncodingType.JPEG,
-            targetWidth: 300,
-            targetHeight: 300,
+            targetWidth: 640,
+            targetHeight: 480,
             popoverOptions: CameraPopoverOptions,
             saveToPhotoAlbum: false
         };
  
         $cordovaCamera.getPicture(options).then(function(imageData) {
-            var item = {
-                text          :  $scope.item.Ptag,
-                complete      : false,
-                containerName : "todoitemimages",
-                imageData     : imageData
-            };
+            $scope.showPopup(imageData);
+        }, function(err) {
+            alert('Could not take a Picture err: ' + err);
+        });
+    };
+
+       /* Uploading a Picture to the server */
+    $scope.openGallery = function() {   
+        /*Set Picture options: Right now the resolution is hardcoded*/
+        var options = { 
+            quality : 75, 
+            destinationType : Camera.DestinationType.DATA_URL, 
+            sourceType : Camera.PictureSourceType.PHOTOLIBRARY, 
+            allowEdit : false,
+            encodingType: Camera.EncodingType.JPEG,
+            targetWidth: 640,
+            targetHeight: 480,
+            popoverOptions: CameraPopoverOptions,
+            saveToPhotoAlbum: false
+        };
+        
+ 
+        $cordovaCamera.getPicture(options).then(function(imageData) {
+            $scope.showPopup(imageData);
+        }, function(err) {
+            alert('Could not take a Picture err: ' + err);
+        });
+    };
+
+
+
+
+
+    // Triggered on a button click, or some other target
+    $scope.showPopup = function(imageData) {
+        $scope.data = {};
+    
+        var myPopup = $ionicPopup.show({
+            template: '<input type="text" ng-model="data.notes">',
+            title: 'Enter notes for the image',
+            scope: $scope,
+            buttons: [
+            { text: 'Discard' },
+                {
+                    text: '<b>Save</b>',
+                    type: 'button-positive',
+                    onTap: function(e) {
+                        return $scope.data.notes;
+                    }
+                }
+            ]
+        });
+
+        myPopup.then(function(res) {
+            console.log('Tapped!', res);
+            $scope.uploadNotesWithImage(imageData,res);        
+        });
+
+    };
+
+    
+    $scope.seePictures = function(){
+        $state.go('itemPictures');
+    };
+
+    $scope.uploadNotesWithImage = function(imageData,notes){
+        
+        var item = {
+            text          : $scope.item.Ptag,
+            complete      : false,
+            containerName : "todoitemimages",
+            imageData     : imageData,
+            notes         : notes
+        };
 
         Azureservice.insert('Todo',
             item)
@@ -153,15 +222,8 @@ angular.module('app.controllers', [])
         }, function(err) {
             console.error('Azure Error: ' + err);
         });
-        
-        }, function(err) {
-            alert('Could not take a Picture err: ' + err);
-        });
-    }
-    
-    $scope.seePictures = function(){
-        $state.go('itemPictures');
-    }
+
+    };
 })
 
 .controller('itemPictures', function($scope,$ionicModal,$http,Azureservice,MainService) {
@@ -182,10 +244,10 @@ angular.module('app.controllers', [])
 
             items.forEach(function(item){
                 $http.get(item.imageUri).then(function(response) {
-                    $scope.allImages.push({src: response.data});
+                    $scope.allImages.push({src: response.data, notes : item.notes });
+                    
                 });
             });
-            //$scope.allImages = allImages;
             
         }, function(err) {
             console.error('There was an error quering Azure ' + err);

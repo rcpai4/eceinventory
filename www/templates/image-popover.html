@@ -1,6 +1,9 @@
 <div class="modal image-modal transparent" ng-click="closeModal()">
     <ion-slide-box on-slide-changed="slideChanged(index)" show-pager="true" active-slide="activeSlide">
         <ion-slide ng-repeat="image in allImages">
+            <div class="bar bar-header bar-light">
+                <h1 class="title">Notes: {{image.notes}} </h1>
+            </div>
             <img ng-src="data:image/jpeg;base64,{{image.src}}" class="fullscreen-image"/>
         </ion-slide>
     </ion-slide-box>
