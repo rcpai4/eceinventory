@@ -281,6 +281,9 @@ angular.module('azure-mobile-service.module', [])
                     console.error('Azureservice.del: You must specify the insert object');
                     return null;
                 }
+                
+                console.error(obj);
+
 
                 return wrapAzurePromiseWithAngularPromise(getTable(tableName, withFilterFn).del(obj));
             },

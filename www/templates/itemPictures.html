@@ -9,8 +9,13 @@
         <a class="item item-list-detail">
             <ion-scroll direction="x">
                 <img ng-repeat="image in allImages"
-                data-ng-src="data:image/jpeg;base64,{{image.src}}" ng-click="showImages($index)" class="image-list-thumb"/>
+                data-ng-src="data:image/jpeg;base64,{{image.src}}"
+                ng-click="showImages($index)"class="image-list-thumb"/>
             </ion-scroll>
         </a>
+        <div class="item item-divider">
+            Click on the images to view the image in full screen and long
+            click to delete     
+        </div>
     </ion-content>
 </ion-view>

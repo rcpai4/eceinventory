@@ -44,18 +44,24 @@ angular.module('app.controllers', [])
 .controller('inventoryCtrl', function($scope,$state,MainService,HttpService,$ionicLoading) {
     $scope.lastName = "";
     $scope.firstName = "";
-    
+    var fullName = '';
   
     $scope.getUserInventory = function(){
-            $ionicLoading.show({
-                template: 'Fetching Inventory...'
-            });
-            HttpService.getUserInventory($scope.lastName + ", " + $scope.firstName).then(function(data) {
+        $ionicLoading.show({
+            template: 'Fetching Inventory...'
+        });
+        if($scope.lastName == ""){
+            fullName =   $scope.firstName;
+        }
+        else{
+            fullName = $scope.lastName + ", " + $scope.firstName;
+        }
+        HttpService.getUserInventory(fullName).then(function(data) {
             //TODO: Handle other case
             MainService.userInventoryList.inventoryList = data;
             $ionicLoading.hide();
             $state.go('InventoryList');            
-        });
+         });
     }
 
 })
@@ -120,15 +126,16 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera,$ionicPopup,$cordovaImagePicker) {
+.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera,$ionicPopup,$cordovaImagePicker,$cordovaGeolocation,$ionicLoading) {
     $scope.itemValues = MainService.itemValues;
     $scope.item = MainService.itemToDisplay;
+    $scope.address = "N/A";
 
     /* Uploading a Picture to the server */
     $scope.takePicture = function() {   
         /*Set Picture options: Right now the resolution is hardcoded*/
         var options = { 
-            quality : 75, 
+            quality : 80, 
             destinationType : Camera.DestinationType.DATA_URL, 
             sourceType : Camera.PictureSourceType.CAMERA, 
             allowEdit : false,
@@ -140,7 +147,7 @@ angular.module('app.controllers', [])
         };
  
         $cordovaCamera.getPicture(options).then(function(imageData) {
-            $scope.showPopup(imageData);
+            $scope.showPopupWithLocation(imageData);
         }, function(err) {
             alert('Could not take a Picture err: ' + err);
         });
@@ -150,7 +157,7 @@ angular.module('app.controllers', [])
     $scope.openGallery = function() {   
         /*Set Picture options: Right now the resolution is hardcoded*/
         var options = { 
-            quality : 75, 
+            quality : 80, 
             destinationType : Camera.DestinationType.DATA_URL, 
             sourceType : Camera.PictureSourceType.PHOTOLIBRARY, 
             allowEdit : false,
@@ -160,7 +167,6 @@ angular.module('app.controllers', [])
             popoverOptions: CameraPopoverOptions,
             saveToPhotoAlbum: false
         };
-        
  
         $cordovaCamera.getPicture(options).then(function(imageData) {
             $scope.showPopup(imageData);
@@ -169,20 +175,55 @@ angular.module('app.controllers', [])
         });
     };
 
-
-
-
-
     // Triggered on a button click, or some other target
-    $scope.showPopup = function(imageData) {
+    $scope.showPopupWithLocation = function(imageData) {
         $scope.data = {};
+        $scope.data.notes = "";
+        $scope.address = "N/A";
     
         var myPopup = $ionicPopup.show({
             template: '<input type="text" ng-model="data.notes">',
             title: 'Enter notes for the image',
             scope: $scope,
             buttons: [
-            { text: 'Discard' },
+                { text: 'Discard' },
+                { 
+                    text: 'Add Location',
+                    type: 'button-positive',
+                    onTap: function(e) {
+                         $scope.getLocation();
+                         e.preventDefault();
+                    }
+                },
+                {
+                    text: '<b>Save</b>',
+                    type: 'button-positive',
+                    onTap: function(e) {
+                        return $scope.data.notes;
+                    }
+                }
+            ]
+        });
+
+        myPopup.then(function(res) {
+            console.log('Tapped!', res);
+            $scope.uploadNotesWithImage(imageData,res);        
+        });
+
+    };
+
+    // Triggered on a button click, or some other target
+    $scope.showPopup = function(imageData) {
+        $scope.data = {};
+        $scope.data.notes = "";
+        $scope.address = "N/A";
+    
+        var myPopup = $ionicPopup.show({
+            template: '<input type="text" ng-model="data.notes">',
+            title: 'Enter notes for the image',
+            scope: $scope,
+            buttons: [
+                { text: 'Discard' },
                 {
                     text: '<b>Save</b>',
                     type: 'button-positive',
@@ -205,6 +246,41 @@ angular.module('app.controllers', [])
         $state.go('itemPictures');
     };
 
+    $scope.getLocation = function(){
+       $ionicLoading.show({
+            template: 'Fetching Address...'
+       });
+
+      var posOptions = {timeout: 30000, enableHighAccuracy: false, maximumAge:60000};
+      $cordovaGeolocation.getCurrentPosition(posOptions)
+        .then(function (position) {
+            var lat  = position.coords.latitude;
+            var long = position.coords.longitude;
+            var geocoder = new google.maps.Geocoder();
+            var latlng = new google.maps.LatLng(lat,long);
+            var request = {
+                latLng: latlng
+            };
+            
+            geocoder.geocode(request, function(data, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                  if (data[0] != null) {
+                    //alert("address is: " + data[0].formatted_address);
+                    $scope.address = data[0].formatted_address;
+                  } else {
+                    alert("No address available");
+                  }
+                }
+                $ionicLoading.hide();
+            });
+
+        }, function(err) {
+            // error
+            console.log('Error to get Current Location : ' +JSON.stringify(err));
+            $ionicLoading.hide();
+        });
+    }
+
     $scope.uploadNotesWithImage = function(imageData,notes){
         
         var item = {
@@ -212,6 +288,7 @@ angular.module('app.controllers', [])
             complete      : false,
             containerName : "todoitemimages",
             imageData     : imageData,
+            address       : $scope.address,
             notes         : notes
         };
 
@@ -226,9 +303,42 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('itemPictures', function($scope,$ionicModal,$http,Azureservice,MainService) {
+.controller('itemPictures', function($scope,$ionicModal,$http,$ionicPopup,Azureservice,MainService) {
 
    $scope.item = MainService.itemToDisplay;
+
+   $scope.deletePicture = function(index){
+        
+       var confirmPopup = $ionicPopup.confirm({
+            title: 'Delete Image',
+            template: 'Are you sure you want to delete this ice cream?'
+        });
+
+        confirmPopup.then(function(res) {
+            if(res) {
+                console.log('You are sure');
+                
+                Azureservice.del('Todo', {
+                    id: $scope.allImages[index].id,
+                    containerName: $scope.allImages[index].containerName
+                })
+                .then(function() {
+                    console.log('Delete successful');
+                    alert('Delete successful');
+                    $scope.refreshImages();
+                }, function(err) {
+                    console.error('Azure Error: ' + err);
+                    alert('Azure Error: ' + err);
+                });
+            } else {
+                console.log('You are not sure');
+            }
+        });
+   };
+
+   $scope.showInfo = function(index){
+        alert('Swipe Up '+ index);
+   };
    
    $scope.allImages = [];
 
@@ -244,8 +354,7 @@ angular.module('app.controllers', [])
 
             items.forEach(function(item){
                 $http.get(item.imageUri).then(function(response) {
-                    $scope.allImages.push({src: response.data, notes : item.notes });
-                    
+                    $scope.allImages.push({src: response.data, notes : item.notes, address : item.address , id : item.id, containerName: item.containerName, blobName: item.blobName});
                 });
             });
             
