@@ -130,7 +130,11 @@ angular.module('app.controllers', [])
     $scope.itemValues = MainService.itemValues;
     $scope.item = MainService.itemToDisplay;
     $scope.address = "N/A";
-
+    
+    
+    $scope.displayHistory = function(){
+        $state.go('itemHistory');        
+    };
     /* Uploading a Picture to the server */
     $scope.takePicture = function() {   
         /*Set Picture options: Right now the resolution is hardcoded*/
@@ -385,6 +389,37 @@ angular.module('app.controllers', [])
     };
 
     $scope.refreshImages();
+
+})
+
+.controller('itemHistory', function($scope,$http) {
+  $scope.transactions = [];
+
+  $http.get("http://191.237.44.32/api/Histories/123456786").then(function(response) {
+      $scope.transactions = response.data;
+      $scope.transactions.forEach(function(element,index,array){
+          element.members = [];
+          for(var name in element) {
+                if(name != 'members')
+                    element.members.push(name);
+            }
+      });
+  });
+  
+  /*
+   * if given group is the selected group, deselect it
+   * else, select the given group
+   */
+  $scope.toggleGroup = function(transaction) {
+    if ($scope.isGroupShown(transaction)) {
+      $scope.shownGroup = null;
+    } else {
+      $scope.shownGroup = transaction;
+    }
+  };
+  $scope.isGroupShown = function(transaction) {
+    return $scope.shownGroup === transaction;
+  };    
 
 })
 

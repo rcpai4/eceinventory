@@ -1,0 +1,22 @@
+<ion-view title=" Item Stuff" ng-app="app">
+    <ion-content overflow-scroll="true" padding="true" class="has-header"
+    ng-controller="itemHistory">
+        <ion-list>
+            <div ng-repeat="transaction in transactions">
+            <ion-item class="item-stable"
+                    ng-click="toggleGroup(transaction)"
+                    ng-class="{active: isGroupShown(transaction)}">
+              <i class="icon" ng-class="isGroupShown(transaction) ? 'ion-minus' : 'ion-plus'"></i>
+            &nbsp;
+            Transaction {{$index}}
+            </ion-item>
+          <ion-item class="item-accordion"
+                    ng-repeat="item in transaction.members"
+                    ng-show="isGroupShown(transaction)">
+                    {{item}}:  {{transaction[item]}}
+          </ion-item>
+        </div>
+      </ion-list>
+
+    </ion-content>
+</ion-view>
