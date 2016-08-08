@@ -126,11 +126,55 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('ItemDescCtrl', function($scope,$state,MainService,Azureservice,$cordovaCamera,$ionicPopup,$cordovaImagePicker,$cordovaGeolocation,$ionicLoading) {
+.controller('ItemDescCtrl', function($scope,$state,$http,MainService,Azureservice,$cordovaCamera,$ionicPopup,$cordovaImagePicker,$cordovaGeolocation,$ionicLoading,ApiEndpoint) {
     $scope.itemValues = MainService.itemValues;
     $scope.item = MainService.itemToDisplay;
     $scope.address = "N/A";
     
+    // Triggered on a button click, or some other target
+    $scope.TransferItem = function() {
+        $scope.datas = {};
+
+        // An elaborate, custom popup
+        var myPopup = $ionicPopup.show({
+            template: '<input type="text" ng-model="datas.transferee">',
+            title: 'Enter Transferee Name',
+            subTitle: 'Please note that input is case sensitive ',
+            scope: $scope,
+            buttons: [
+                { text: 'Cancel' },
+                {
+                    text: '<b>transfer</b>',
+                    type: 'button-positive',
+                    onTap: function(e) {
+                        if (!$scope.datas.transferee) {
+                            e.preventDefault();
+                        } else {
+                            return $scope.datas.transferee;
+                        }
+                    }
+                }
+            ]
+        });
+
+    myPopup.then(function(res) {
+        console.log('Tapped!', res);
+        var d = new Date();
+        var n = d.getTime();
+        console.log('Sender ' + $scope.item["Custodian"]); 
+        $http.post( ApiEndpoint.url + "/Transfers",
+                    { Ptag    : $scope.item.Ptag, 
+                      Sender  : $scope.item["Custodian"], 
+                      Receiver: res,
+                      Time    : n
+                    }).then(function (res){
+            console.log('Res ' + res); 
+        },function(err){
+           console.error('Err ' + err); 
+        });
+    });
+
+ };
     
     $scope.displayHistory = function(){
         $state.go('itemHistory');        
@@ -307,7 +351,7 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('itemPictures', function($scope,$ionicModal,$http,$ionicPopup,Azureservice,MainService) {
+.controller('itemPictures', function($scope,$ionicModal,$http,$ionicPopup,Azureservice,MainService,ApiEndpoint) {
 
    $scope.item = MainService.itemToDisplay;
 
@@ -315,7 +359,7 @@ angular.module('app.controllers', [])
         
        var confirmPopup = $ionicPopup.confirm({
             title: 'Delete Image',
-            template: 'Are you sure you want to delete this ice cream?'
+            template: 'Are you sure you want to delete this image?'
         });
 
         confirmPopup.then(function(res) {
@@ -341,8 +385,16 @@ angular.module('app.controllers', [])
    };
 
    $scope.showInfo = function(index){
-        alert('Swipe Up '+ index);
-   };
+        // An alert dialog
+        var alertPopup = $ionicPopup.alert({
+            title: 'Information',
+            template:  '<p>Notes: ' + $scope.allImages[index].notes +'</p><p>Address: ' + $scope.allImages[index].address + '</p>' 
+        });
+
+       alertPopup.then(function(res) {
+         console.log('Thank you ');
+        });
+    };
    
    $scope.allImages = [];
 
@@ -392,10 +444,11 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('itemHistory', function($scope,$http) {
+.controller('itemHistory', function($scope,$http,ApiEndpoint,MainService) {
   $scope.transactions = [];
+  $scope.item = MainService.itemToDisplay;
 
-  $http.get("http://191.237.44.32/api/Histories/123456786").then(function(response) {
+  $http.get( ApiEndpoint.url + "/Histories/" + $scope.item['Ptag']).then(function(response) {
       $scope.transactions = response.data;
       $scope.transactions.forEach(function(element,index,array){
           element.members = [];
