@@ -1,8 +1,8 @@
 <ion-view view-title="Login" ng-app="app" align-title="center">
     <ion-content overflow-scroll="true" padding="true" class="has-header"
     ng-controller="loginCtrl">
-        <form class="list">
-            <ion-list>
+    <!--<form class="list">-->
+            <!--<ion-list>
                 <label class="item item-input">
                     <span class="input-label">Username </span>
                     <input type="text" placeholder="" ng-model="userInfo.name">
@@ -16,11 +16,13 @@
                     <input type="text" placeholder="" ng-model="userInfo.email">
                 </label>                
             </ion-list>
-            <div class="spacer" style="height: 40px;"></div>
+            <div class="spacer" style="height: 40px;"></div>-->
+           <div class="row">
+           <div class="col text-center"> 
             <a id="login-button2" class="button
-                button-stable button-block" ng-click="setUserInfo()">Log in
-                using vt email</a>
-            
-        </form>
+                button-large button-assertive" ng-click="setUserInfo()">Login </a>
+            </div>
+            </div>
+            <!--</form>-->
     </ion-content>
 </ion-view>

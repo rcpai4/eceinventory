@@ -75,6 +75,7 @@ angular.module('app.controllers', [])
                 //alert("Serv " + imageData.text);
                 console.log("Barcode Format -> " + imageData.format);
                 console.log("Cancelled -> " + imageData.cancelled);
+                console.log("text -> " + imageData.text);
                 $scope.barcode = imageData.text;
 
                 $ionicLoading.show({
